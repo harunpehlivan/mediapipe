@@ -310,27 +310,29 @@ class SolutionBase:
     self._simulated_timestamp += 33333
     for stream_name, data in input_dict.items():
       input_stream_type = self._input_stream_type_info[stream_name]
-      if (input_stream_type == _PacketDataType.PROTO_LIST or
-          input_stream_type == _PacketDataType.AUDIO):
-        # TODO: Support audio data.
-        raise NotImplementedError(
-            f'SolutionBase can only process non-audio and non-proto-list data. '
-            f'{self._input_stream_type_info[stream_name].name} '
-            f'type is not supported yet.')
-      elif (input_stream_type == _PacketDataType.IMAGE_FRAME or
-            input_stream_type == _PacketDataType.IMAGE):
-        if data.shape[2] != RGB_CHANNELS:
-          raise ValueError('Input image must contain three channel rgb data.')
+      if (input_stream_type not in [
+          _PacketDataType.PROTO_LIST, _PacketDataType.AUDIO
+      ] and input_stream_type in [
+          _PacketDataType.IMAGE_FRAME, _PacketDataType.IMAGE
+      ] and data.shape[2] != RGB_CHANNELS):
+        raise ValueError('Input image must contain three channel rgb data.')
+      elif (input_stream_type not in [
+            _PacketDataType.PROTO_LIST, _PacketDataType.AUDIO
+        ] and input_stream_type in [
+            _PacketDataType.IMAGE_FRAME, _PacketDataType.IMAGE
+        ] or input_stream_type not in [
+            _PacketDataType.PROTO_LIST, _PacketDataType.AUDIO
+        ]):
         self._graph.add_packet_to_input_stream(
             stream=stream_name,
             packet=self._make_packet(input_stream_type,
                                      data).at(self._simulated_timestamp))
       else:
-        self._graph.add_packet_to_input_stream(
-            stream=stream_name,
-            packet=self._make_packet(input_stream_type,
-                                     data).at(self._simulated_timestamp))
-
+        # TODO: Support audio data.
+        raise NotImplementedError(
+            f'SolutionBase can only process non-audio and non-proto-list data. '
+            f'{self._input_stream_type_info[stream_name].name} '
+            f'type is not supported yet.')
     self._graph.wait_until_idle()
     # Create a NamedTuple object where the field names are mapping to the graph
     # output stream names.
@@ -505,8 +507,7 @@ class SolutionBase:
 
   def _make_packet(self, packet_data_type: _PacketDataType,
                    data: Any) -> packet.Packet:
-    if (packet_data_type == _PacketDataType.IMAGE_FRAME or
-        packet_data_type == _PacketDataType.IMAGE):
+    if packet_data_type in [_PacketDataType.IMAGE_FRAME, _PacketDataType.IMAGE]:
       return getattr(packet_creator, 'create_' + packet_data_type.value)(
           data, image_format=image_frame.ImageFormat.SRGB)
     else:
@@ -529,8 +530,7 @@ class SolutionBase:
       return None
     if packet_data_type == _PacketDataType.STRING:
       return packet_getter.get_str(output_packet)
-    elif (packet_data_type == _PacketDataType.IMAGE_FRAME or
-          packet_data_type == _PacketDataType.IMAGE):
+    elif packet_data_type in [_PacketDataType.IMAGE_FRAME, _PacketDataType.IMAGE]:
       return getattr(packet_getter, 'get_' +
                      packet_data_type.value)(output_packet).numpy_view()
     else:

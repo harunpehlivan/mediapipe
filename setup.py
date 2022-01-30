@@ -121,9 +121,8 @@ def _modify_opencv_cmake_rule(link_opencv):
                    'r').read().replace('OPENCV_SHARED_LIBS = True',
                                        'OPENCV_SHARED_LIBS = False')
     shutil.move(MP_THIRD_PARTY_BUILD, _get_backup_file(MP_THIRD_PARTY_BUILD))
-    build_file = open(MP_THIRD_PARTY_BUILD, 'w')
-    build_file.write(content)
-    build_file.close()
+    with open(MP_THIRD_PARTY_BUILD, 'w') as build_file:
+      build_file.write(content)
 
 
 class ModifyInitFiles(setuptools.Command):
@@ -140,12 +139,11 @@ class ModifyInitFiles(setuptools.Command):
   def run(self):
     # Save the original init file.
     shutil.copyfile(MP_DIR_INIT_PY, _get_backup_file(MP_DIR_INIT_PY))
-    mp_dir_init_file = open(MP_DIR_INIT_PY, 'a')
-    mp_dir_init_file.writelines(
-        ['\n', 'from mediapipe.python import *\n',
-         'import mediapipe.python.solutions as solutions',
-         '\n'])
-    mp_dir_init_file.close()
+    with open(MP_DIR_INIT_PY, 'a') as mp_dir_init_file:
+      mp_dir_init_file.writelines(
+          ['\n', 'from mediapipe.python import *\n',
+           'import mediapipe.python.solutions as solutions',
+           '\n'])
 
 
 class GeneratePyProtos(setuptools.Command):

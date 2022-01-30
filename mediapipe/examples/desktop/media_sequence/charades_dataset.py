@@ -206,7 +206,7 @@ class Charades(object):
                          back_prop=False,
                          dtype=tf.uint8)
 
-      output_dict = {
+      return {
           "segment_matrix": segments_matrix,
           "indicator_matrix": indicator,
           "classification_target": classification_target,
@@ -218,7 +218,6 @@ class Charades(object):
           "num_timesteps": sequence_length,
           "images": images,
       }
-      return output_dict
 
     if split not in SPLITS:
       raise ValueError("Split %s not in %s" % split, str(list(SPLITS.keys())))
@@ -329,10 +328,7 @@ class Charades(object):
 
   def _download_data(self):
     """Downloads and extracts data if not already available."""
-    if sys.version_info >= (3, 0):
-      urlretrieve = urllib.request.urlretrieve
-    else:
-      urlretrieve = urllib.request.urlretrieve
+    urlretrieve = urllib.request.urlretrieve
     logging.info("Creating data directory.")
     tf.io.gfile.makedirs(self.path_to_data)
     logging.info("Downloading license.")
@@ -472,8 +468,7 @@ def timepoint_classification_target(segments, segment_classes, num_classes):
       tf.ones(shape=[1, 1], dtype=tf.float32) / tf.to_float(num_segments),
       tf.ones(shape=[1, num_classes - 1], dtype=tf.float32)
   ], 1)
-  corrected_one_hot = tf.floor(one_hot * normalizer)
-  return corrected_one_hot
+  return tf.floor(one_hot * normalizer)
 
 
 def progress_hook(blocks, block_size, total_size):
@@ -483,10 +478,7 @@ def progress_hook(blocks, block_size, total_size):
 
 def bytes23(string):
   """Creates a bytes string in either Python 2 or  3."""
-  if sys.version_info >= (3, 0):
-    return bytes(string, "utf8")
-  else:
-    return bytes(string)
+  return bytes(string, "utf8") if sys.version_info >= (3, 0) else bytes(string)
 
 
 @contextlib.contextmanager

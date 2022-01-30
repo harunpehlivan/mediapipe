@@ -196,10 +196,7 @@ class DemoDataset(object):
           "mediapipe/graphs/media_sequence/.")
     logging.info("Downloading data.")
     tf.io.gfile.makedirs(self.path_to_data)
-    if sys.version_info >= (3, 0):
-      urlretrieve = urllib.request.urlretrieve
-    else:
-      urlretrieve = urllib.request.urlretrieve
+    urlretrieve = urllib.request.urlretrieve
     for split in SPLITS:
       reader = csv.DictReader(SPLITS[split].split("\n"))
       all_metadata = []
@@ -285,10 +282,7 @@ class DemoDataset(object):
 
 def bytes23(string):
   """Creates a bytes string in either Python 2 or  3."""
-  if sys.version_info >= (3, 0):
-    return bytes(string, "utf8")
-  else:
-    return bytes(string)
+  return bytes(string, "utf8") if sys.version_info >= (3, 0) else bytes(string)
 
 
 @contextlib.contextmanager

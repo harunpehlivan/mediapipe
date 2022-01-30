@@ -49,10 +49,7 @@ def add_functions_to_module(function_dict, module_dict=None):
 
 
 def merge_prefix(prefix, key):
-  if prefix:
-    return "/".join((prefix, key))
-  else:
-    return key
+  return "/".join((prefix, key)) if prefix else key
 
 
 def has_context(key, sequence, prefix=""):

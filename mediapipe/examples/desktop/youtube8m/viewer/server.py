@@ -57,12 +57,10 @@ class Youtube8MRequestHandler(http.server.SimpleHTTPRequestHandler):
       parsed_params = parse.urlparse(self.path)
       url_params = parse.parse_qs(parsed_params.query)
 
-      tfrecord_path = ""
       segment_size = 5
 
       print(url_params)
-      if "file" in url_params:
-        tfrecord_path = url_params["file"][0]
+      tfrecord_path = url_params["file"][0] if "file" in url_params else ""
       if "segments" in url_params:
         segment_size = int(url_params["segments"][0])
 
@@ -141,11 +139,11 @@ class Youtube8MRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     if not os.path.exists(output_file):
       print(output_file, "doesn't exist locally, download it now.")
-      return_code = subprocess.call(
+      if return_code := subprocess.call(
           ["curl", "--output", output_file, tfrecord_url],
           stdout=subprocess.PIPE,
-          stderr=subprocess.PIPE)
-      if return_code:
+          stderr=subprocess.PIPE,
+      ):
         self.report_error("Could not retrieve contents from %s" % tfrecord_url)
         return
     else:
@@ -206,16 +204,14 @@ class Youtube8MRequestHandler(http.server.SimpleHTTPRequestHandler):
           subtract = segment_size / 2.0 if show_at_center else 0.0
           entry["time"] = float(int(column)) / 1000000.0 - subtract
           first = False
+        elif label_score := re.match("(.+):([0-9.]+).*", column):
+          score = float(label_score.group(2))
+          entry["labels"].append({
+              "label": label_score.group(1),
+              "score": score
+          })
         else:
-          label_score = re.match("(.+):([0-9.]+).*", column)
-          if label_score:
-            score = float(label_score.group(2))
-            entry["labels"].append({
-                "label": label_score.group(1),
-                "score": score
-            })
-          else:
-            print("empty score")
+          print("empty score")
 
     response_json = json.dumps(final_results, indent=2, separators=(",", ": "))
     self.send_response(200)

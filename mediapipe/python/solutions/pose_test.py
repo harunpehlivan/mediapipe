@@ -121,10 +121,9 @@ class PoseTest(parameterized.TestCase):
     expected_dot = segm_expected * segm_expected
     actual_dot = segm_actual * segm_actual
     eps = np.finfo(np.float32).eps
-    result = intersection.sum() / (expected_dot.sum() +
+    return intersection.sum() / (expected_dot.sum() +
                                    actual_dot.sum() -
                                    intersection.sum() + eps)
-    return result
 
   def _segmentation_diff_to_rgb(self, segm_expected, segm_actual,
                                 expected_color=(0, 255, 0),

@@ -328,10 +328,7 @@ class Kinetics(object):
 
   def _download_data(self, download_labels_for_map):
     """Downloads and extracts data if not already available."""
-    if sys.version_info >= (3, 0):
-      urlretrieve = urllib.request.urlretrieve
-    else:
-      urlretrieve = urllib.request.urlretrieve
+    urlretrieve = urllib.request.urlretrieve
     logging.info("Creating data directory.")
     tf.io.gfile.makedirs(self.path_to_data)
     logging.info("Downloading annotations.")
@@ -417,10 +414,7 @@ class Kinetics(object):
 
 def bytes23(string):
   """Creates a bytes string in either Python 2 or  3."""
-  if sys.version_info >= (3, 0):
-    return bytes(string, "utf8")
-  else:
-    return bytes(string)
+  return bytes(string, "utf8") if sys.version_info >= (3, 0) else bytes(string)
 
 
 @contextlib.contextmanager
